@@ -114,7 +114,7 @@ def PreActResNet18(**kwargs):
     return PreActResNet(PreActBlock, [2,2,2,2], **kwargs)
 
 def PreActResNetWide18(**kwargs):
-    return PreActResNet(PreActBlock, [2,2,2,2], width=5, **kwargs)
+    return PreActResNet(PreActBlock, [2,2,2,2], width=2, **kwargs)
 
 preactresnet18 = PreActResNet18
 preactwideresnet18 = PreActResNetWide18

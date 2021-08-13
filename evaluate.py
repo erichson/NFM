@@ -12,6 +12,7 @@ def main():
     
     folder = 'cifar10_models/'
     models = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    models = sorted(models)
     print(models)
     
     _, test_loader = getData(name='cifar10', train_bs=128, test_bs=1024) 
@@ -23,8 +24,8 @@ def main():
         print(m)
         model.eval()
         #acc1 = cls_validate(test_loader, model)
-        _ = cls_noisy_validate(test_loader, model)
-        #_ = cls_sp_validate(test_loader, model)
+        #_ = cls_noisy_validate(test_loader, model)
+        _ = cls_sp_validate(test_loader, model)
 
 def cls_validate(val_loader, model, time_begin=None):
     model.eval()

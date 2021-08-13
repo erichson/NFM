@@ -84,7 +84,14 @@ train_loader, test_loader = getData(name=args.name, train_bs=args.batch_size, te
 #==============================================================================
 # get model
 #==============================================================================
-model = src.cifar_models.__dict__[args.arch](num_classes=10).cuda()
+if args.name == 'cifar10': 
+    num_classes=10
+elif args.name == 'cifar100': 
+    num_classes=100
+
+print(num_classes)
+
+model = src.cifar_models.__dict__[args.arch](num_classes=num_classes).cuda()
 
 
 #==============================================================================
