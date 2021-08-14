@@ -10,7 +10,7 @@ from torch.autograd import Variable
 
 from src.get_data import getData
 import src.imagenet_models
-from src.noisy_mixup import mixup_criterion
+from src.noisy_mixup import mixup_criterion, do_noisy_mixup
 from src.tools import validate, lr_scheduler
 
 #==============================================================================
@@ -21,11 +21,11 @@ parser = argparse.ArgumentParser(description='ImageNet Example')
 #
 parser.add_argument('--name', type=str, default='imagenet', metavar='N', help='dataset')
 #
-parser.add_argument('--batch_size', type=int, default=128, metavar='N', help='input batch size for training (default: 128)')
+parser.add_argument('--batch_size', type=int, default=256, metavar='N', help='input batch size for training (default: 256)')
 #
-parser.add_argument('--test_batch_size', type=int, default=512, metavar='N', help='input batch size for testing (default: 1000)')
+parser.add_argument('--test_batch_size', type=int, default=512, metavar='N', help='input batch size for testing (default: 512)')
 #
-parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 90)')
+parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
 #
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.1)')
 #
@@ -33,19 +33,19 @@ parser.add_argument('--lr_decay', type=float, default=0.1, help='learning rate d
 #
 parser.add_argument('--lr_decay_epoch', type=int, nargs='+', default=[100, 150, 180], help='decrease learning rate at these epochs.')
 #
-parser.add_argument('--wd', default=5e-4, type=float, metavar='W', help='weight decay (default: 5e-4)')
+parser.add_argument('--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 #
 parser.add_argument('--arch', type=str, default='resnet50', metavar='N', help='model name')
 #
-parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 0)')
+parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 #
-parser.add_argument('--alpha', type=float, default=0.0, metavar='S', help='for mixup')
+parser.add_argument('--alpha', type=float, default=1.0, metavar='S', help='for mixup')
 #
-parser.add_argument('--manifold_mixup', type=int, default=0, metavar='S', help='manifold mixup (default: 0)')
+parser.add_argument('--manifold_mixup', type=int, default=1, metavar='S', help='manifold mixup (default: 0)')
 #
-parser.add_argument('--add_noise_level', type=float, default=0.0, metavar='S', help='level of additive noise')
+parser.add_argument('--add_noise_level', type=float, default=0.1, metavar='S', help='level of additive noise')
 #
-parser.add_argument('--mult_noise_level', type=float, default=0.0, metavar='S', help='level of multiplicative noise')
+parser.add_argument('--mult_noise_level', type=float, default=0.1, metavar='S', help='level of multiplicative noise')
 #
 args = parser.parse_args()
 
@@ -87,8 +87,9 @@ train_loader, test_loader = getData(name=args.name, train_bs=args.batch_size, te
 #==============================================================================
 num_classes=1000
 
-model = src.imagenet_models.__dict__[args.arch](num_classes=num_classes).cuda()
-
+model = src.imagenet_models.__dict__[args.arch](num_classes=num_classes)
+model = torch.nn.DataParallel(model)
+model = model.cuda()
 
 #==============================================================================
 # Model summary
@@ -128,14 +129,22 @@ for epoch in tqdm(range(args.epochs)):
         inputs = inputs.cuda(non_blocking=True)
         targets = targets.cuda(non_blocking=True)
 
+        k = 0 if args.alpha > 0.0 else -1
+        if args.alpha > 0.0 and args.manifold_mixup == True: 
+            k = np.random.choice(range(4), 1)[0]
 
-        if args.alpha == 0.0:   
-            outputs = model(inputs)
+        # intermediate results
+        if k == 0:
+            outputs = inputs
         else:
-            outputs, targets_a, targets_b, lam = model(inputs, targets=targets, mixup_alpha=args.alpha,
-                                                      manifold_mixup=args.manifold_mixup,
-                                                      add_noise_level=args.add_noise_level,
-                                                      mult_noise_level=args.mult_noise_level)
+            outputs = model(inputs, resume_layer=0, exit_layer=k)
+
+        # mix outputs
+        if k >= 0:
+            mixed_up_outputs, targets_a, targets_b, lam = do_noisy_mixup(outputs, targets, alpha=args.alpha, 
+                                                                add_noise_level=args.add_noise_level, 
+                                                                mult_noise_level=args.mult_noise_level)
+            outputs = model(mixed_up_outputs, resume_layer=k+1, exit_layer=-1)
         
         if args.alpha>0:
             loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)

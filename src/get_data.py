@@ -64,10 +64,13 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
         transforms.Normalize(mean, std),
     ])
         train_set = ImageFolder(root=IMAGENET_TRAIN_FOLDER, transform=transform_train)
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=train_bs, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=train_bs, 
+                                    shuffle=True, pin_memory=True, num_workers=32,
+                                    prefetch_factor=2)
 
         test_set = ImageFolder(root=IMAGENET_TEST_FOLDER, transform=transform_train)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=test_bs, shuffle=False)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=test_bs, 
+                                    shuffle=False, pin_memory=True, num_workers=32)
 
     else:
         raise NameError('dataset is not supported')
