@@ -47,6 +47,8 @@ parser.add_argument('--add_noise_level', type=float, default=0.1, metavar='S', h
 #
 parser.add_argument('--mult_noise_level', type=float, default=0.1, metavar='S', help='level of multiplicative noise')
 #
+parser.add_argument('--save_freq', type=int, default=10, metavar='S', help='number of epochs before saving')
+#
 args = parser.parse_args()
 
 #==============================================================================
@@ -112,6 +114,18 @@ optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight
 criterion = nn.CrossEntropyLoss().to(device)
 
 #==============================================================================
+# define function to save model
+#==============================================================================
+
+def save_model(model, args, epoch):
+    destination_path = args.name + '_models/'
+    out_dir = os.path.join(destination_path, f'arch_{args.arch}_alpha_{args.alpha}_manimixup_{args.manifold_mixup}_addn_{args.add_noise_level}_multn_{args.mult_noise_level}_seed_{args.seed}_epoch_{epoch}')
+
+    if not os.path.isdir(destination_path):
+            os.mkdir(destination_path)
+    torch.save(model, out_dir+'.pt')
+
+#==============================================================================
 # start training
 #==============================================================================
 count = 0
@@ -174,14 +188,8 @@ for epoch in tqdm(range(args.epochs)):
     # schedule learning rate decay    
     optimizer = lr_scheduler(epoch, optimizer, decay_eff=args.lr_decay, decayEpoch=args.lr_decay_epoch)
 
+    if (epoch+1 % args.save_freq) == 0:
+        save_model(model, args, epoch+1)
+
+save_model(model, args, args.epochs)
 print('total time: ', timeit.default_timer()  - t0 )
-
-#==============================================================================
-# store results
-#==============================================================================
-DESTINATION_PATH = args.name + '_models/'
-OUT_DIR = os.path.join(DESTINATION_PATH, f'arch_{args.arch}_alpha_{args.alpha}_manimixup_{args.manifold_mixup}_addn_{args.add_noise_level}_multn_{args.mult_noise_level}_seed_{args.seed}')
-
-if not os.path.isdir(DESTINATION_PATH):
-        os.mkdir(DESTINATION_PATH)
-torch.save(model, OUT_DIR+'.pt')
