@@ -1,8 +1,11 @@
 import torch
 from torchvision import datasets, transforms
+from robustness.tools.folder import ImageFolder
 
+IMAGENET_TRAIN_FOLDER = '/scratch/data/imagenet12/train'
+IMAGENET_TEST_FOLDER = '/scratch/data/imagenet12/val'
 
-def getData(name='cifar10', train_bs=128, test_bs=512):    
+def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_path=None):    
     
     if name == 'cifar10':
         transform_train = transforms.Compose([
@@ -43,7 +46,29 @@ def getData(name='cifar10', train_bs=128, test_bs=512):
 
         testset = datasets.CIFAR100(root='../cifar100', train=False, download=False, transform=transform_test)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=test_bs, shuffle=False)
-        
+
+    elif name == 'imagenet':
+        mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+
+        transform_train = transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std),
+    ])
+
+        transform_test = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std),
+    ])
+        train_set = ImageFolder(root=IMAGENET_TRAIN_FOLDER, transform=transform_train)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=train_bs, shuffle=True)
+
+        test_set = ImageFolder(root=IMAGENET_TEST_FOLDER, transform=transform_train)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=test_bs, shuffle=False)
+
     else:
         raise NameError('dataset is not supported')
         
