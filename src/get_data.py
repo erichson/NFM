@@ -21,10 +21,10 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
     ])
 
         trainset = datasets.CIFAR10(root='../cifar10', train=True, download=True, transform=transform_train)
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=train_bs, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=train_bs, shuffle=True, num_workers=4, pin_memory=True)
 
         testset = datasets.CIFAR10(root='../cifar10', train=False, download=False, transform=transform_test)
-        test_loader = torch.utils.data.DataLoader(testset, batch_size=test_bs, shuffle=False)
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=test_bs, shuffle=False, num_workers=4, pin_memory=True)
     
     
     
@@ -42,10 +42,10 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
     ])
 
         trainset = datasets.CIFAR100(root='../cifar100', train=True, download=True, transform=transform_train)
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=train_bs, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=train_bs, shuffle=True, num_workers=4, pin_memory=True)
 
         testset = datasets.CIFAR100(root='../cifar100', train=False, download=False, transform=transform_test)
-        test_loader = torch.utils.data.DataLoader(testset, batch_size=test_bs, shuffle=False)
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=test_bs, shuffle=False, num_workers=4, pin_memory=True)
 
     elif name == 'imagenet':
         mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
