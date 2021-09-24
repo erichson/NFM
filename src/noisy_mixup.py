@@ -15,7 +15,7 @@ def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
     return mult_noise * x + add_noise      
 
 def do_noisy_mixup(x, y, alpha=0.0, add_noise_level=0.0, mult_noise_level=0.0):
-    lam = BETA.sample() if alpha > 0.0 else 1.0
+    lam = np.random.beta(alpha, alpha) if alpha > 0.0 else 1.0
     index = torch.randperm(x.size()[0], device=torch.device('cuda:0'))
     mixed_x = lam * x + (1 - lam) * x[index]
     y_a, y_b = y, y[index]
