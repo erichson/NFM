@@ -6,8 +6,7 @@ def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
     mult_noise = 1.0
     with torch.cuda.device(0):
         if add_noise_level > 0.0:
-            var = add_noise_level * np.random.beta(2, 5)
-            add_noise = var * torch.cuda.FloatTensor(x.shape).normal_()
+            add_noise = add_noise_level * np.random.beta(2, 5) * torch.cuda.FloatTensor(x.shape).normal_()
             #torch.clamp(add_noise, min=-(2*var), max=(2*var), out=add_noise) # clamp
         if mult_noise_level > 0.0:
             mult_noise = mult_noise_level * np.random.beta(2, 5) * (2*torch.cuda.FloatTensor(x.shape).uniform_()-1) + 1 
