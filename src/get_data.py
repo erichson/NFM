@@ -83,7 +83,7 @@ class CIFAR10Corrupt(VisionDataset):
         return img, target
 
 
-def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_path=None, severity=0, noise=0):
+def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_path=None, severity=0, noise='fog'):
 
     if name == 'cifar10':
         transform_train = transforms.Compose([
