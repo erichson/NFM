@@ -123,3 +123,8 @@ def plot_reliability(save_dir, m, reliability_diag=None, ece=None, freq=None, ds
         d = {"reliability_diag": reliability_diag, "ece": ece, "freq": freq, "dset_label_info": dset_label_info}
 
     _plot_reliability(save_dir, m, **d)
+
+
+def plot_cifar10c(save_dir, m, model_to_noise_to_severity_dict):
+    # TODO
+    return
