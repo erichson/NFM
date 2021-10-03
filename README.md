@@ -77,12 +77,20 @@ def forward(self, x, targets=None, mixup_alpha=0.0, manifold_mixup=0,
             return out
 ```
 
-If you like to use our code, you can simply train a ResNet-18 with NFM as follows.
+If you like to use our code, you can simply train a ResNet-18 with NFM on CIFAR-10 as follows.
 
 
 ```
-export CUDA_VISIBLE_DEVICES=1; python train_cifar.py --arch preactresnet18 --alpha 1.0 --add_noise_level 0.4 --mult_noise_level 0.2 --manifold_mixup 1 --seed 1
+python train_cifar.py --arch preactresnet18 --alpha 1.0 --add_noise_level 0.4 --mult_noise_level 0.2 --manifold_mixup 1 --seed 1
 ```
+
+You can also simply train a Wide-ResNet-18 with NFM on CIFAR-100 as follows.
+
+```
+python train_cifar.py --name cifar100 --arch preactwideresnet18 --alpha 1.0 --add_noise_level 0.4 --mult_noise_level 0.2 --manifold_mixup 1 --seed 1
+```
+
+
 
 
 If you find this work useful and use it on your own research, please concider citing our paper.
