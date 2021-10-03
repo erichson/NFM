@@ -3,13 +3,13 @@
 NFM is a simple yet efficient data augmentation method that can help to improve the predictive accuracy and robustness of vision models. NFM combines ideas such as [classic mixup](https://arxiv.org/abs/1710.09412), [manifold mixup](https://arxiv.org/abs/1806.05236) and noise injections. The advantage of NFM compared to other schemes is illustrated by the following toy example, where it can be seen that NFM smoothes the decision boundary.
 
 <p align="center">
-    <img src="db.png" height="600">
+    <img src="db.png" height="300">
 </p>
 
 The advantage for training Wide-ResNets on CIFAR-100 is illustrated by the figure below. The model trained with NFM has the best predictive accuracy on clean data, while also being more robust with respect to data pertubations as compared to the baseline model and other data augmention schemes. 
 
 <p align="center">
-    <img src="WideResNet.png" height="300">
+    <img src="WideResNet.png" height="200">
 </p>
 
 First, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
