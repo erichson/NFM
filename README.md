@@ -46,7 +46,8 @@ def mixup_criterion(criterion, pred, y_a, y_b, lam):
 
 To take the full advantage of NFM, one needs also to modify the forward pass of the network. Here is an example for ResNets.
 
-``` def forward(self, x, targets=None, mixup_alpha=0.0, manifold_mixup=0, 
+``` 
+def forward(self, x, targets=None, mixup_alpha=0.0, manifold_mixup=0, 
                 add_noise_level=0.0, mult_noise_level=0.0):
            
         k = 0 if mixup_alpha > 0.0 else -1
