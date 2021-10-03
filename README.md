@@ -12,7 +12,7 @@ The advantage for training Wide-ResNets on CIFAR-100 is illustrated by the figur
     <img src="WideResNet.png" height="250">
 </p>
 
-First, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
+To use NMF, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
 
 ```
 def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
@@ -26,7 +26,7 @@ def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
     return mult_noise * x + add_noise
 ```
 
-The following block can be used a drop-in replacement for the widely used mixup function. If the noise levels are set to 0, then we yield the classic mixup scheme, otherwise we yield a form of noisy mixup.
+Then, the following block can be used a drop-in replacement for the widely used mixup function. If the noise levels are set to 0, then we yield the classic mixup scheme, otherwise we yield a form of noisy mixup.
 
 ```
 def nfm(x, y, alpha=0.0, add_noise_level=0.0, mult_noise_level=0.0):
