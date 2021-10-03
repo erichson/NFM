@@ -26,7 +26,7 @@ def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
     return mult_noise * x + add_noise
 ```
 
-Then, the following block can be used a drop-in replacement for the widely used mixup function. If the noise levels are set to 0, then we yield the classic mixup scheme, otherwise we yield a form of noisy mixup.
+Then, the following block can be used as a drop-in replacement for the widely used mixup function. If the noise levels are set to 0, then we yield the classic mixup scheme, otherwise we yield a form of noisy mixup.
 
 ```
 def nfm(x, y, alpha=0.0, add_noise_level=0.0, mult_noise_level=0.0):
