@@ -1,6 +1,8 @@
 # Noisy Feature Mixup (NFM)
 
-NFM is a simple yet efficient data augmentation method that can help to improve the predictive accuracy and robustness of vision models. NFM combines ideas such as [classic mixup](https://arxiv.org/abs/1710.09412), [manifold mixup](https://arxiv.org/abs/1806.05236) and noise injections. The advantage of NFM compared to other schemes is illustrated by the following toy example, where it can be seen that NFM smoothes the decision boundary.
+NFM is a simple, inexpensive yet effective data augmentation method that can help improve the predictive accuracy and robustness of vision models. NFM combines ideas of [input mixup](https://arxiv.org/abs/1710.09412), [manifold mixup](https://arxiv.org/abs/1806.05236) and noise injections, and include them as special cases. Rather than training with convex combinations of pairs of examples and their labels, NFM use noise-perturbed convex combinations of pairs of  data points in both input and feature space. NFM can be implemented on top of manifold mixup, introducing minimal computation overhead.
+
+The advantage of NFM compared to other schemes is illustrated on the following binary classification task on a noisy toy dataset, where it can be seen that NFM smoothes the decision boundary.
 
 <p align="center">
     <img src="db.png" height="300">
@@ -12,7 +14,7 @@ The advantage for training Wide-ResNets on CIFAR-100 is illustrated by the figur
     <img src="WideResNet.png" height="250">
 </p>
 
-To use NMF, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
+To use NFM, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
 
 ```
 def _noise(x, add_noise_level=0.0, mult_noise_level=0.0, sparsity_level=0.0):
@@ -77,7 +79,7 @@ def forward(self, x, targets=None, mixup_alpha=0.0, manifold_mixup=0,
             return out
 ```
 
-If you like to use our code, you can simply train a ResNet-18 with NFM on CIFAR-10 as follows.
+If you would like to use our code, you can simply train a ResNet-18 with NFM on CIFAR-10 as follows.
 
 
 ```
@@ -93,6 +95,6 @@ python train_cifar.py --name cifar100 --arch preactwideresnet18 --alpha 1.0 --ad
 
 
 
-If you find this work useful and use it on your own research, please concider citing our paper.
+For more details, please refer to the paper. If you find this work useful and use it on your own research, please concider citing our paper.
 
 
