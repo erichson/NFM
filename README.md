@@ -9,7 +9,7 @@ NFM is a simple yet efficient data augmentation method that can help to improve 
 The advantage for training Wide-ResNets on CIFAR-100 is illustrated by the figure below. The model trained with NFM has the best predictive accuracy on clean data, while also being more robust with respect to data pertubations as compared to the baseline model and other data augmention schemes. 
 
 <p align="center">
-    <img src="WideResNet.png" height="200">
+    <img src="WideResNet.png" height="250">
 </p>
 
 First, we need a code block that perturbs a minibatch with white noise and multiplicative noise.
