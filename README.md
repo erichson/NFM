@@ -95,6 +95,6 @@ python train_cifar.py --name cifar100 --arch preactwideresnet18 --alpha 1.0 --ad
 
 
 
-For more details, please refer to the paper. If you find this work useful and use it on your own research, please concider citing our paper.
+For more details, please refer to the [paper](https://arxiv.org/abs/2110.02180). If you find this work useful and use it on your own research, please concider citing our paper.
 
 
