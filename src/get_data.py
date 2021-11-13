@@ -200,7 +200,4 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
                                                   num_workers=4,
                                                   pin_memory=False)
 
-    else:
-        raise NameError('dataset is not supported')
-
     return train_loader, test_loader
