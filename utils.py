@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def _get_calibration(y, p_mean, num_bins=20, axis=-1, individual=False, attributes=False, debug=False):
+def _get_calibration(y, p_mean, num_bins=10, axis=-1, individual=False, attributes=False, debug=False):
     """Compute the calibration.
     Modified from: https://github.com/xwinxu/bayesian-sde/blob/main/brax/utils/utils.py
     References:
@@ -152,16 +152,24 @@ def severity_vs_error(info_corrupt):
     # x: 0 - 5, y: error (%)
     mean_corrupt_error = []
     std_corrupt_error = []
+    mean_corrupt_ece = []
+    std_corrupt_ece = []
     for severity in SEVERITIES:
-        corrupt_error = []
+        corrupt_error, corrupt_ece = [], []
         for noise in NOISE_TYPES:
-            _corrupt_error = info_corrupt[noise][severity]
+            _corrupt_error = info_corrupt[noise][severity]['acc']
+            _corrupt_ece = info_corrupt[noise][severity]['ece']
             corrupt_error.append(_corrupt_error)
+            corrupt_ece.append(_corrupt_ece)
         mean_corrupt_error.append(np.mean(corrupt_error))
         std_corrupt_error.append(np.std(corrupt_error))
+        mean_corrupt_ece.append(np.mean(corrupt_ece))
+        mean_corrupt_ece.append(np.std(corrupt_ece))
     assert len(mean_corrupt_error) == len(SEVERITIES)
     assert len(std_corrupt_error) == len(SEVERITIES)
-    return mean_corrupt_error, std_corrupt_error
+    assert len(mean_corrupt_ece) == len(SEVERITIES)
+    assert len(std_corrupt_ece) == len(SEVERITIES)
+    return mean_corrupt_error, std_corrupt_error, mean_corrupt_ece, std_corrupt_ece
 
 def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xticks=["1", "2", "3", "4", "5"]):
 
@@ -188,19 +196,20 @@ def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xt
     N = len(models)
     bar_width = 0.1
 
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
     # ax.set_prop_cycle(color=["2e1e3b", "#413d7b", "#37659e", "#348fa7", "#40b7ad", "#8bdab2"])
-    ax.set_prop_cycle(color=[manimix_base, nfm_a02_1_04_02, nfm_a1_0_0_0, nfm_a1_1_0_0, nfm_a1_1_04_02, nfm_1e8_1_04_02, augmix, puzzmix])
 
     x = np.arange(len(SEVERITIES))
     
     with open(f'{save_dir}/cifar10c.npy', 'rb') as f:
         info_corrupt = np.load(f, allow_pickle=True).item()
     
+    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+    ax.set_prop_cycle(color=[manimix_base, nfm_a02_1_04_02, nfm_a1_0_0_0, nfm_a1_1_0_0, nfm_a1_1_04_02, nfm_1e8_1_04_02, augmix, puzzmix])
+
     for i, model in enumerate(range(N)):
         _model = models[model]
         _model_info = info_corrupt[_model]
-        y, yerr = severity_vs_error(_model_info)
+        y, yerr, ece, ece_err = severity_vs_error(_model_info)
         # ax.errorbar(x, y, yerr=yerr, label=_model, elinewidth=2)
         ax.bar(np.arange(len(SEVERITIES)) + i * bar_width, np.array(y) * 100, width=bar_width, edgecolor='white', label=legend[i])
         # ax.errorbar(x, y, yerr=yerr, label=_model, fmt='o', elinewidth=2)
@@ -212,10 +221,34 @@ def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xt
     plt.ylim([0, 100])
 
     plt.tight_layout()
-    plt.savefig("%s/cifar10c/%s.pdf" % (save_dir, name))
-    plt.savefig("%s/cifar10c/%s.png" % (save_dir, name))
+    plt.savefig("%s/cifar10c/%s-acc.pdf" % (save_dir, name))
+    plt.savefig("%s/cifar10c/%s-acc.png" % (save_dir, name))
     # plt.savefig("%s/%s.svg" % (plot_dir, name), format='svg')
     plt.clf()
+
+    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+    ax.set_prop_cycle(color=[manimix_base, nfm_a02_1_04_02, nfm_a1_0_0_0, nfm_a1_1_0_0, nfm_a1_1_04_02, nfm_1e8_1_04_02, augmix, puzzmix])
+
+    for i, model in enumerate(range(N)):
+        _model = models[model]
+        _model_info = info_corrupt[_model]
+        y, yerr, ece, ece_err = severity_vs_error(_model_info)
+        # ax.errorbar(x, y, yerr=yerr, label=_model, elinewidth=2)
+        ax.bar(np.arange(len(SEVERITIES)) + i * bar_width, np.array(ece) * 100, width=bar_width, edgecolor='white', label=legend[i])
+        # ax.errorbar(x, y, yerr=yerr, label=_model, fmt='o', elinewidth=2)
+
+    plt.legend(loc=legend_loc, prop={'size': 13})
+    ax.set_ylabel("Expected Calibration Error (%)")
+    ax.set_xlabel("Severity Level")
+    plt.xticks([r + 3 * bar_width for r in range(len(SEVERITIES))], _xticks)
+    plt.ylim([0, 100])
+
+    plt.tight_layout()
+    plt.savefig("%s/cifar10c/%s-ece.pdf" % (save_dir, name))
+    plt.savefig("%s/cifar10c/%s-ece.png" % (save_dir, name))
+    # plt.savefig("%s/%s.svg" % (plot_dir, name), format='svg')
+    plt.clf()
+
     plt.close(fig)
     
     return

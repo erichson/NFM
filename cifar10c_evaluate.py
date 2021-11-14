@@ -15,6 +15,7 @@ import collections
 def cls_validate(val_loader, model, time_begin=None):
     model.eval()
     acc1_val = 0
+    ece_val = 0
     n = 0
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
@@ -26,10 +27,12 @@ def cls_validate(val_loader, model, time_begin=None):
             model_logits = output[0] if (type(output) is tuple) else output
             pred = model_logits.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
             acc1_val += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+            ece_val += _get_calibration(target, torch.nn.functional.softmax(model_logits.data), num_bins=10)['ece'].sum()
             n += len(images)
 
     avg_acc1 = (acc1_val / n)
-    return avg_acc1
+    avg_ece = ece_val / n
+    return avg_acc1, avg_ece
 
 def main_cifar10c(folder, save_dir):
     os.makedirs(os.path.join(args.save_dir, 'cifar10c'), exist_ok=True)
@@ -48,8 +51,8 @@ def main_cifar10c(folder, save_dir):
             results[m][noise] = collections.defaultdict(dict)
             for severity in SEVERITIES:
                 _, test_loader = getData(name='cifar10c', train_bs=128, test_bs=1024, severity=severity, noise=noise)
-                result_m = cls_validate(test_loader, model)
-                results[m][noise][severity] = result_m
+                result_m, result_ece = cls_validate(test_loader, model)
+                results[m][noise][severity] = {'acc': result_m, 'ece': result_ece}
         with open(f"{save_dir}/cifar10c/robust_{m}.pickle", "wb") as f:
             np.save(f, result_m)
 
