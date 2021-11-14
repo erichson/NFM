@@ -173,14 +173,14 @@ def severity_vs_error(info_corrupt):
 
 def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xticks=["1", "2", "3", "4", "5"]):
 
-    puzzmix = "red"
-    augmix = "blue"
-    manimix_base = "green"
-    nfm_a02_1_04_02 = "violet"
-    nfm_1e8_1_04_02 = "navy"
-    nfm_a1_0_0_0 = "coral"
-    nfm_a1_1_0_0 = "orange"
-    nfm_a1_1_04_02 = "grey"
+    puzzmix = "#f2724e"
+    augmix = "#8b1c5a"
+    manimix_base = "#73d5ac"
+    nfm_a02_1_04_02 = "#41b7ad"
+    nfm_1e8_1_04_02 = "#3488a5"
+    nfm_a1_0_0_0 = "#385e9a"
+    nfm_a1_1_0_0 = "#403f7f"
+    nfm_a1_1_04_02 = "#35274b"
 
     legend = {0: 'manifold', 1: 'nfm_a02_1_04_02', 2: 'nfm_a1_0_0_0', 3: 'nfm_a1_1_0_0',
               4: 'nfm_a1_1_04_02', 5: 'nfm_1e8_1_04_02', 6: 'augmix', 7: 'puzzmix'}
@@ -203,6 +203,7 @@ def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xt
     with open(f'{save_dir}/cifar10c.npy', 'rb') as f:
         info_corrupt = np.load(f, allow_pickle=True).item()
     
+    # plot error first
     fig, ax = plt.subplots(1, 1, figsize=(9, 6))
     ax.set_prop_cycle(color=[manimix_base, nfm_a02_1_04_02, nfm_a1_0_0_0, nfm_a1_1_0_0, nfm_a1_1_04_02, nfm_1e8_1_04_02, augmix, puzzmix])
 
@@ -226,6 +227,7 @@ def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xt
     # plt.savefig("%s/%s.svg" % (plot_dir, name), format='svg')
     plt.clf()
 
+    # plot eces
     fig, ax = plt.subplots(1, 1, figsize=(9, 6))
     ax.set_prop_cycle(color=[manimix_base, nfm_a02_1_04_02, nfm_a1_0_0_0, nfm_a1_1_0_0, nfm_a1_1_04_02, nfm_1e8_1_04_02, augmix, puzzmix])
 
