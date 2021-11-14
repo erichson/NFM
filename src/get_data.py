@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 from PIL import Image
 from robustness.tools.folder import ImageFolder
@@ -10,7 +11,7 @@ IMAGENET_TRAIN_FOLDER = '/scratch/data/imagenet12/train'
 IMAGENET_TEST_FOLDER = '/scratch/data/imagenet12/val'
 
 # download from https://zenodo.org/record/2535967/files/CIFAR-10-C.tar?download=1
-CIFAR10C_FOLDER = '/scratch/data/cifar10c'
+CIFAR10C_FOLDER = 'data/cifar/CIFAR-10-C/'
 NOISE_TYPES = [
     "brightness",
     "contrast",
@@ -190,7 +191,7 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
                                                    num_workers=4,
                                                    pin_memory=False)
 
-        testset = datasets.CIFAR10Corrupt(root=CIFAR10C_FOLDER,
+        testset = CIFAR10Corrupt(root=CIFAR10C_FOLDER,
                                           severity=[severity],
                                           noise=[noise],
                                           transform=transform_test)
@@ -200,7 +201,5 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
                                                   num_workers=4,
                                                   pin_memory=False)
 
-    else:
-        raise NameError('dataset is not supported')
 
     return train_loader, test_loader
