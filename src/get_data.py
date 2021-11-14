@@ -201,5 +201,4 @@ def getData(name='cifar10', train_bs=128, test_bs=512, train_path=None, test_pat
                                                   num_workers=4,
                                                   pin_memory=False)
 
-
     return train_loader, test_loader
