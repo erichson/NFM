@@ -4,18 +4,20 @@ import numpy as np
 import torch
 import torch.optim
 import torch.utils.data
-
+import argparse
 from src.get_data import getData
 
 
-def main():
+def main(noise_type='white', data='cifar10', folder=None, batch_size=512):
 
-    folder = 'cifar10_models/'
     models = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
     models = sorted(models)
+    print('************************')
+    print(noise_type)
+    print('************************')
     print(models)
 
-    _, test_loader = getData(name='cifar10', train_bs=128, test_bs=1024)
+    _, test_loader = getData(name=data, train_bs=batch_size, test_bs=batch_size)
 
     for index, m in enumerate(models):
         model = torch.load(folder + m)
@@ -24,8 +26,10 @@ def main():
         print(m)
         model.eval()
         #acc1 = cls_validate(test_loader, model)
-        #_ = cls_noisy_validate(test_loader, model)
-        _ = cls_sp_validate(test_loader, model)
+        if noise_type=='white':
+        	_ = cls_noisy_validate(test_loader, model)
+        elif noise_type=='sp':
+        	_ = cls_sp_validate(test_loader, model)
 
 
 def cls_validate(val_loader, model, time_begin=None):
@@ -133,4 +137,19 @@ def cls_sp_validate(val_loader, model, time_begin=None):
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser("Noisy Feature Mixup")
+    parser.add_argument("--noise", default='white', type=str, help='noise type')        
+    parser.add_argument("--data", type=str, default='cifar10', required=False, help='dataset')
+    parser.add_argument("--dir", type=str, default='cifar10_models/', required=False, help='model dir')
+    parser.add_argument("--batch_size", default=1024, type=int, help='batch size')
+
+    args = parser.parse_args()
+
+    test_batch_size = args.batch_size
+
+    if args.noise == 'white' or args.noise == 'sp' :
+    	main(noise_type=args.noise, data=args.data, folder=args.dir, batch_size=args.batch_size)
+    elif args.noise =='both':
+    	main(noise_type='white', data=args.data, folder=args.dir, batch_size=args.batch_size)
+    	main(noise_type='sp', data=args.data, folder=args.dir, batch_size=args.batch_size)
+

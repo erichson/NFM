@@ -113,11 +113,11 @@ class PreActResNet(nn.Module):
 def PreActResNet18(**kwargs):
     return PreActResNet(PreActBlock, [2,2,2,2], **kwargs)
 
-def PreActResNetWide18(**kwargs):
+def PreActWideResNet18(**kwargs):
     return PreActResNet(PreActBlock, [2,2,2,2], width=2, **kwargs)
 
 preactresnet18 = PreActResNet18
-preactwideresnet18 = PreActResNetWide18
+preactwideresnet18 = PreActWideResNet18
 
 def test():
     net = PreActResNet18()

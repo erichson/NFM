@@ -1,13 +1,46 @@
-from os import set_blocking
-import pickle
+import argparse
+import os
 
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
+import torch.optim
+import torch.utils.data
+from torch import nn
+
+from os import set_blocking
+import pickle
 import pandas as pd
 import seaborn as sns
 
 from torch.nn import functional as F
+
+
+from src.get_data import NOISE_TYPES, SEVERITIES
+from src.get_data import getData
+
+import collections
+
+
+
+
+def cls_validate(val_loader, model, time_begin=None):
+    model.eval()
+    acc1_val = 0
+    n = 0
+    with torch.no_grad():
+        for i, (images, target) in enumerate(val_loader):
+            images = images.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
+
+            output = model(images)
+
+            model_logits = output[0] if (type(output) is tuple) else output
+            pred = model_logits.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+            acc1_val += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+            n += len(images)
+
+    avg_acc1 = (acc1_val / n)
+    return avg_acc1
 
 
 ##### averaging across corruptions #####
@@ -134,3 +167,54 @@ def plot_cifar10c(save_dir, models, legend_loc="lower left", name='sev_acc', _xt
     # plt.savefig("%s/%s.svg" % (plot_dir, name), format='svg')
     plt.clf()
     print(NOISE_TYPES)
+
+def main_cifar10c(folder, save_dir):
+    os.makedirs(os.path.join(args.save_dir, 'cifar10c'), exist_ok=True)
+
+    models = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    models = sorted(models)
+    print(models)
+
+    results = collections.defaultdict(dict)
+
+    for index, m in enumerate(models):
+        model = torch.load(folder + m)
+        print(m)
+        model.eval()
+        for noise in NOISE_TYPES:
+            results[m][noise] = collections.defaultdict(dict)
+            for severity in SEVERITIES:
+                _, test_loader = getData(name='cifar10c', train_bs=128, test_bs=1024, severity=severity, noise=noise)
+                result_m = cls_validate(test_loader, model)
+                results[m][noise][severity] = result_m
+        with open(f"{save_dir}/cifar10c/robust_{m}.pickle", "wb") as f:
+            np.save(f, result_m)
+
+    return results
+
+def main_plot_cifar10c(folder, save_dir):
+    models = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    models = sorted(models)
+    plot_cifar10c(save_dir, models)
+    print(save_dir)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser("Noisy Feature Mixup")
+    parser.add_argument("--dir", type=str, default='cifar10_models/', required=False, help='model dir')
+    parser.add_argument("--save_dir", default='.', help='if plotting, save here. Call this the exp id.')
+    parser.add_argument("--plot", action="store_true", default=False, help="whether or not to plot calibration, else just evaluates on cifar10c")
+    parser.add_argument("--batch_size", default=128, type=int, help='batch size')
+    args = parser.parse_args()
+
+    test_batch_size = args.batch_size
+    os.makedirs(args.save_dir, exist_ok=True)
+
+    if args.plot:
+        main_plot_cifar10c(args.dir, args.save_dir)
+        print(f'plots saved in {args.save_dir}')
+    else:
+         results_dict2 = main_cifar10c(args.dir, args.save_dir)
+         with open(os.path.join(args.save_dir, 'cifar10c.npy'), 'wb') as f:
+             np.save(f, results_dict2)
+             print(f'saved results successfully')
+
